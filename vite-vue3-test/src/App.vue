@@ -9,9 +9,6 @@
 
 <script setup>
 import AppHeader from '@/components/common/AppHeader.vue';
-
-import { useCounterStore } from '@/store/counter';
-const store = useCounterStore();
 </script>
 
 <style></style>

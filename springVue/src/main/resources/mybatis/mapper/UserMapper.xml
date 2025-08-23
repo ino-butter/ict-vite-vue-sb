@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springVueTest.mapper.UserMapper">
 	<select id="selectUserByUsername" parameterType="hashMap" resultType="hashMap">
-        SELECT id, username, password
+        SELECT email, pw, nickname
         FROM user
-        WHERE username = #{username}
+        WHERE email = #{email} AND pw = #{pw}
     </select>
 </mapper>

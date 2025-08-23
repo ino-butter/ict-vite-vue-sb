@@ -48,16 +48,5 @@ export const useCounterStore = defineStore('counter', () => {
 		return `${currnetYear}.${month}.${day} (${dayOfWeek})`;
 	});
 
-	async function test() {
-		try {
-			const reponse = await userAPI.getTest({
-				username: 'test',
-			});
-			console.log(reponse.data);
-		} catch (error) {
-			console.log(error);
-		}
-	}
-
-	return { getDays, getToday, test };
+	return { getDays, getToday };
 });
