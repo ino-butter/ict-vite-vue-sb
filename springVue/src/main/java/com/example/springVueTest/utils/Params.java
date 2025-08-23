@@ -11,19 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Params {
 	 private Map<String, Object> innerMap = new HashMap<>();
 
-	    // JSON 필드를 innerMap에 넣도록 Jackson에 알려줌
 	    @JsonAnySetter
 	    public void put(String key, Object value) {
 	        this.innerMap.put(key, value);
 	    }
 
-	    // 직렬화 시 innerMap을 JSON 필드로 내보냄
 	    @JsonAnyGetter
 	    public Map<String, Object> getMap() {
 	        return this.innerMap;
 	    }
 
-	    // 기존 유틸 메소드 유지
 	    public Object get(String key) {
 	        return this.innerMap.get(key);
 	    }

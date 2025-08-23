@@ -8,6 +8,8 @@ import org.hibernate.dialect.function.VarArgsSQLFunction;
 import org.hibernate.dialect.identity.IdentityColumnSupport;
 import org.hibernate.type.StringType;
 
+// sqlite가 hibernate지원을 안해서 직접 만들어줘야함
+
 public class SQLDialect extends Dialect {
 
   public SQLDialect() {

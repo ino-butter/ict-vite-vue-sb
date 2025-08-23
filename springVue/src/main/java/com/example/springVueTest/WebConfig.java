@@ -13,10 +13,10 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // 모든 API 허용
-                        .allowedOrigins("http://localhost:5173")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                registry.addMapping("/auth/**") // CORS 설정 auth 도메인만 인증없이 허용
+                        .allowedOrigins("http://localhost:5173") // 주소
+                        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS") // 허용하는 메소드타입
+                        .allowCredentials(true);
             }
         };
     }

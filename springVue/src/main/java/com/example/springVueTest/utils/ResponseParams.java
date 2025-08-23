@@ -17,17 +17,21 @@ public class ResponseParams {
 		this.message = message;
 		this.data = data;
 	}
-	public void setIsSuccess(boolean isSuccess){
+	public ResponseParams setIsSuccess(boolean isSuccess){
 		this.isSuccess = isSuccess;
+		return this;
 	}
-	public void setCode(int code) {
+	public ResponseParams setCode(int code) {
 		this.code = code;
+		return this;
 	}
-	public void setMessage(String message) {
+	public ResponseParams setMessage(String message) {
 		this.message = message;
+		return this;
 	}
-	public void setData(Object data) {
+	public ResponseParams setData(Object data) {
 		this.data = data;
+		return this;
 	}
     @JsonAnyGetter
 	public Map<String, Object> getMap() {
@@ -35,7 +39,7 @@ public class ResponseParams {
 		innerMap.put("isSuccess", this.isSuccess);
 		innerMap.put("code", this.code);
 		innerMap.put("message", this.message);
-		innerMap.put("data", this.data);
+		innerMap.put("result", this.data);
 		return innerMap;
 	}
 }

@@ -1,7 +1,13 @@
 import api from './index';
 
 export const userAPI = {
-	getTest(data) {
-		return api.post('/user/login', data);
+	login(data) {
+		return api.post('/auth/login', data);
+	},
+	refreshAccessToken(data) {
+		return api.post('/auth/refresh_access_token', data);
+	},
+	test() {
+		return api.post('/user/test');
 	},
 };

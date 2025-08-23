@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springVueTest.mapper.AuthMapper">
+	<select id="searchUser" parameterType="hashMap" resultType="hashMap">
+		SELECT *
+		FROM USER
+		WHERE ID = #{ID} AND PW = #{PW}
+	</select>
+	<select id="getUserByRefreshToken" parameterType="hashMap">
+		SELECT IDX, REFRESH_TOKEN
+		FROM USER
+		WHERE REFRESH_TOKEN = #{REFRESH_TOKEN}
+	</select>
+	<update id="updateRefreshToken" parameterType="hashMap">
+		UPDATE USER
+		SET REFRESH_TOKEN = #{REFRESH_TOKEN}
+		WHERE IDX = #{IDX}
+	</update>
+</mapper>

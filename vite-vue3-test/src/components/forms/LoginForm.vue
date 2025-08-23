@@ -19,10 +19,17 @@
 					class="w-full border border-[#dae1e7] shadow-md px-3 py-2 mb-4"
 				/>
 			</div>
-			<button v-on:click="tryLogin"
-			class="w-full py-2 px-6 font-bold rounded-sm border-0 border-solid border-[#dae1e7] text-white bg-green-500"
+			<button
+				v-on:click="tryLogin"
+				class="w-full py-2 px-6 font-bold rounded-sm border-0 border-solid border-[#dae1e7] text-white bg-green-500"
 			>
 				로그인
+			</button>
+			<button
+				v-on:click="test"
+				class="w-full py-2 px-6 font-bold rounded-sm border-0 border-solid border-[#dae1e7] text-white bg-green-500"
+			>
+				테스트
 			</button>
 			<div class="text-xs text-gray-400 text-center w-64 mx-auto p-5 space-x-2">
 				<router-link to="/login">로그인</router-link>
@@ -43,10 +50,10 @@ const userStore = useUserStore();
 
 async function tryLogin() {
 	await userStore.login(email.value, pw.value);
-	console.log("데이터 끝");
+}
+async function test() {
+	await userStore.test();
 }
 </script>
 
-<style>
-
-</style>
+<style></style>
