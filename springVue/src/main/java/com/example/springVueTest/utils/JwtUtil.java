@@ -15,9 +15,9 @@ public class JwtUtil {
 	private final String SECRET_STRING = "mySuperSuperSecretKeyForJWTs123456789012"; // 32바이트 이상
 	private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
 
-	private final long ACCESS_TOKEN_EXPIRE = 1000 * 1 * 1; // 밀리 * 초 * 분
-	private final long REFRESH_TOKEN_EXPIRE = 1000 * 30 * 1; // 밀리 * 초 * 분
-	// private final long REFRESH_TOKEN_EXPIRE = 1000L * 60 * 60 * 24 * 7; // 7일
+	private final long ACCESS_TOKEN_EXPIRE = 1000 * 60 * 30; // 밀리 * 초 * 분
+	//private final long REFRESH_TOKEN_EXPIRE = 1000 * 30 * 1; // 밀리 * 초 * 분
+	 private final long REFRESH_TOKEN_EXPIRE = 1000L * 60 * 60 * 24 * 7; // 7일
 
 	// Access Token 생성
 	public String generateAccessToken(String username) {

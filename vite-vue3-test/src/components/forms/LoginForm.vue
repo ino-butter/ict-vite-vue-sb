@@ -40,19 +40,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const email = ref('');
 const pw = ref('');
 
-import { useUserStore } from '@/store/user';
-const userStore = useUserStore();
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
+import { storeToRefs } from 'pinia';
+
+const authStore = useAuthStore();
+const router = useRouter();
+const { accessToken } = storeToRefs(authStore);
 
 async function tryLogin() {
-	await userStore.login(email.value, pw.value);
+	try {
+		const result = await authStore.login(email.value, pw.value);
+		if (result) {
+			router.push('/main');
+		}
+	} catch (error) {
+		console.log(error);
+	}
 }
+onMounted(async () => {
+	try {
+		const result = await authStore.autoLogin();
+		if (result) {
+			router.push('/main');
+		}
+	} catch (error) {
+		console.log(error);
+	}
+});
 async function test() {
-	await userStore.test();
+	await authStore.test();
 }
 </script>
 

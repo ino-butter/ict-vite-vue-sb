@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useUserStore } from '@/store/user';
+import { useAuthStore } from '@/store/auth';
 
 const api = axios.create({
 	baseURL: 'http://localhost:8085', // 여기만 수정하면 됨
@@ -37,7 +37,7 @@ api.interceptors.response.use(
 			if (refreshToken) {
 				try {
 					console.error('Access Token 만료, 재갱신 요청');
-					const userStore = useUserStore();
+					const userStore = useAuthStore();
 					await userStore.refreshAccessToken();
 					// 재요청
 					originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('ACCESS_TOKEN')}`;

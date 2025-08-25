@@ -30,4 +30,9 @@ public class AuthController {
 	public Map<String, Object> refreshAccessToken(@RequestBody Params params) {
 		return authService.refreshAccessToken(params.getMap());
 	}
+	
+	@PostMapping("/auto_login")
+	public Map<String, Object> autoLogin(@RequestBody Params params) {
+		return authService.autoLogin(params.getMap());
+	}
 }

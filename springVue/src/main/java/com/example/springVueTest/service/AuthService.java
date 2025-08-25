@@ -47,7 +47,24 @@ public class AuthService {
 		}
 		return responseParams.getMap();
 	}
+	public Map<String, Object> autoLogin(Map<String, Object> map) {
+		ResponseParams responseParams = new ResponseParams();
+		String refreshToken = map.get("REFRESH_TOKEN").toString();
+		String idx = jwtUtil.extractUsername(refreshToken);
+		if (jwtUtil.validateToken(refreshToken, idx)){
+			Map<String, Object> retmap = new HashMap<String, Object>();		
+			String newAccessToken = jwtUtil.generateAccessToken(idx);
+			retmap.put("ACCESS_TOKEN", newAccessToken);
+			responseParams.setCode(200).setIsSuccess(true).setData(retmap);
+			System.out.println("Refresh토큰 정상");
+		}
+		else {
+			responseParams.setCode(401).setIsSuccess(false);
+			System.out.println("Refresh토큰 만료");
+		}
 
+		return responseParams.getMap();
+	}
 	public Map<String, Object> refreshAccessToken(Map<String, Object> map) {
 		System.out.println("AccessToken 재갱신 시작");
 		ResponseParams responseParams = new ResponseParams();
