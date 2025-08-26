@@ -21,7 +21,6 @@ const routes = [
 	{
 		path: '/bookticket',
 		component: () => import('@/views/BookTicketPage.vue'),
-		meta: { auth: true },
 	},
 ];
 

@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import { userAPI } from '~/src/api/auth';
 
 const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -33,7 +32,8 @@ export const useCounterStore = defineStore('counter', () => {
 			const dayOfWeek = daysOfWeek[date.getDay()];
 
 			dateList.push({
-				date: `${month}.${day}`,
+				month: month,
+				day: day,
 				dayOfWeek: dayOfWeek,
 				isToday: i === 0,
 			});
