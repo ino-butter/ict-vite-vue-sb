@@ -1,27 +1,27 @@
 <template>
 	<div class="max-w-6xl mx-auto my-5 bg-white rounded-lg shadow-md overflow-hidden">
-		<!-- 전체 4컬럼 -->
 		<div class="flex h-[600px]">
-			<!-- 영화 -->
-			<div class="flex-1 border-r border-gray-300 flex flex-col">
-				<!-- 헤더 -->
+			<div class="w-80 border-r border-gray-300 flex flex-col">
 				<div class="bg-green-500 text-white font-bold text-center py-2"> 영화 </div>
-				<!-- 리스트 -->
 				<div class="flex-1 overflow-y-auto bg-[#fdfbf5]">
 					<ul class="px-3 py-2 text-left text-sm space-y-2">
 						<li v-for="(movie, idx) in movieRelease" :key="idx" class="flex items-center gap-2">
-							<span
-								class="text-white text-xs px-1 rounded"
-								:class="{
-									'bg-green-600': movie.AGE_LIMIT === 'ALL',
-									'bg-yellow-500': movie.AGE_LIMIT === '12',
-									'bg-orange-600': movie.AGE_LIMIT === '15',
-									'bg-red-600': movie.AGE_LIMIT === '18',
-								}"
+							<div
+								class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
 							>
-								{{ movie.AGE_LIMIT }}
-							</span>
-							{{ movie.TITLE }}
+								<span
+									class="text-white text-xs px-1 rounded"
+									:class="{
+										'bg-green-600': movie.AGE_LIMIT === 'ALL',
+										'bg-yellow-500': movie.AGE_LIMIT === '12',
+										'bg-orange-600': movie.AGE_LIMIT === '15',
+										'bg-red-600': movie.AGE_LIMIT === '18',
+									}"
+								>
+									{{ movie.AGE_LIMIT }}
+								</span>
+								<span> {{ movie.TITLE }}</span>
+							</div>
 						</li>
 					</ul>
 				</div>
@@ -32,14 +32,38 @@
 				<div class="bg-green-500 text-white font-bold text-center py-2"> 지역 </div>
 				<div class="flex-1 overflow-y-auto bg-[#fdfbf5]">
 					<ul class="px-3 py-2 text-left text-sm space-y-2">
-						<li>서울({{ getCinemasByRegion('서울').count }})</li>
-						<li>경기({{ getCinemasByRegion('경기').count }})</li>
-						<li>인천({{ getCinemasByRegion('인천').count }})</li>
-						<li>부산({{ getCinemasByRegion('부산').count }})</li>
-						<li>울산({{ getCinemasByRegion('울산').count }})</li>
-						<li>경주({{ getCinemasByRegion('경주').count }})</li>
-						<li>제주({{ getCinemasByRegion('제주').count }})</li>
-						<li>전라({{ getCinemasByRegion('전라').count }})</li>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>서울({{ getCinemas('서울').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>경기({{ getCinemas('경기').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>인천({{ getCinemas('인천').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>부산({{ getCinemas('부산').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>울산({{ getCinemas('울산').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>경주({{ getCinemas('경주').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>제주({{ getCinemas('제주').count }})</li
+						>
+						<li
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+							>전라({{ getCinemas('전라').count }})</li
+						>
 					</ul>
 				</div>
 			</div>
@@ -49,7 +73,11 @@
 				<div class="bg-green-500 text-white font-bold text-center py-2"> 극장 </div>
 				<div class="flex-1 overflow-y-auto bg-[#fdfbf5]">
 					<ul class="px-3 py-2 text-left text-sm space-y-2" v-if="selectRegion !== ''">
-						<li v-for="(cinema, idx) in getCinemasByRegion(selectRegion).cinemas" :key="idx">
+						<li
+							v-for="(cinema, idx) in getCinemas('서울').cinemas"
+							:key="idx"
+							class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
+						>
 							{{ cinema.NAME }}
 						</li>
 					</ul>
@@ -60,17 +88,29 @@
 			<div class="w-40 border-r border-gray-300 flex flex-col">
 				<div class="bg-green-500 text-white font-bold text-center py-2"> 날짜 </div>
 				<div class="flex-1 overflow-y-auto bg-[#fdfbf5] text-center">
-					<p class="font-bold py-2">2022.10</p>
+					<p class="font-bold py-2">{{ getToday }}</p>
 					<ul class="space-y-1">
-						<li class="text-blue-600">토 15</li>
-						<li class="text-red-600">일 16</li>
-						<li>월 17</li>
-						<li>화 18</li>
-						<li>수 19</li>
-						<li>목 20</li>
-						<li>금 21</li>
-						<li class="text-blue-600">토 22</li>
-						<li class="text-red-600">일 23</li>
+						<li v-for="(day, idx) in getDays" :key="idx">
+							<div
+								:class="[
+									'text-center gap-2 w-full px-2 py-1 rounded transition-colors duration-200',
+									isReleaseMovieDate(day)
+										? [
+												day.dayOfWeek === '토'
+													? 'text-blue-600 hover:bg-zinc-400 cursor-pointer'
+													: day.dayOfWeek === '일'
+														? 'text-red-600 hover:bg-zinc-400 cursor-pointer'
+														: ' hover:bg-zinc-400 cursor-pointer',
+											]
+										: 'text-gray-400',
+								]"
+							>
+								{{ day.dayOfWeek }} {{ day.day }}
+							</div>
+						</li>
+
+						<!-- <li class="text-blue-600">토 22</li> -->
+						<!-- <li class="text-red-600">일 23</li> -->
 					</ul>
 				</div>
 			</div>
@@ -89,13 +129,17 @@
 </template>
 <script setup>
 import { useMovieStore } from '@/store/movie';
+import { useDateStore } from '@/store/date';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const movieStore = useMovieStore();
-const { movieRelease } = storeToRefs(movieStore);
-const getCinemasByRegion = movieStore.getCinemasByRegion;
+const dateStore = useDateStore();
+const { movieRelease, selectRegion } = storeToRefs(movieStore);
 
-const selectRegion = ref('');
+const getCinemas = movieStore.getCinemas;
+const getToday = dateStore.getToday;
+const getDays = dateStore.getDays;
+const isReleaseMovieDate = movieStore.isReleaseMovieDate;
 </script>
 <style></style>

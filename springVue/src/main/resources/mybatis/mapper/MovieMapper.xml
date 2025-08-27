@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springVueTest.mapper.MovieMapper">
+	<select id="getMovieRelease" resultType="hashMap">
+		SELECT *
+		FROM MOVIE M
+		LEFT OUTER JOIN MOVIE_RELEASE MR
+		WHERE M.IDX = MR.MOVIE_IDX
+	</select>
+	<select id="getCinema" resultType="hashMap">
+		SELECT *
+    	FROM MOVIE_SCHEDULE MS
+    	LEFT OUTER JOIN MOVIE_CINEMA MC
+      	ON MS.CINEMA_IDX = MC.IDX
+   		WHERE MS.MOVIE_IDX = #{MOVIE_IDX}
+	</select>
+</mapper>

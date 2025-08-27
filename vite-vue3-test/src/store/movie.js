@@ -5,6 +5,7 @@ import { movieAPI } from '@/api/movie';
 export const useMovieStore = defineStore('movie', () => {
 	const movieRelease = ref('');
 	const cinemas = ref({});
+	const selectMovieIDX = ref('1');
 
 	async function getMovieRelease() {
 		const response = await movieAPI.getMovieRelease();
@@ -12,7 +13,12 @@ export const useMovieStore = defineStore('movie', () => {
 		console.log(movieRelease.value);
 	}
 	async function getCinema() {
-		const response = await movieAPI.getCinema();
+		if (!selectMovieIDX.value) return;
+
+		const data = {
+			MOVIE_IDX: selectMovieIDX.value,
+		};
+		const response = await movieAPI.getCinema(data);
 		const _cinemas = response.data.result;
 
 		const grouped = _cinemas.reduce((acc, item) => {
@@ -20,16 +26,44 @@ export const useMovieStore = defineStore('movie', () => {
 			acc[item.REGION].push(item);
 			return acc;
 		}, {});
-
 		cinemas.value = grouped; // Pinia 상태에 저장
+		getReleaseMovieDate('', '', '');
 	}
-	function getCinemasByRegion(region) {
-		const arr = cinemas.value[region] || [];
+	function getCinemas(selectRegion) {
+		const arr = cinemas.value[selectRegion] || [];
 		return {
 			cinemas: arr,
 			count: arr.length,
 		};
 	}
+	function getReleaseMovieDate(movieIDX, region, cinemaIDX) {
+		return filterMovies(cinemas.value, 1, '부산', 6);
+		//return filterMovies(cinemas.value, movieIDX, region, cinemaIDX);
+	}
+	function isReleaseMovieDate(day) {
+		const schedule = filterMovies(cinemas.value, 1, '부산', 6);
+		if (!schedule || schedule.length === 0) return false;
+		const selectDate = `${day.year}-${day.month}-${day.day}`;
+		return schedule.some(item => {
+			const startDate = item.START_TIME.split(' ')[0]; // 연월일만 추출
+			return startDate === selectDate; // day는 이미 "YYYY-MM-DD"
+		});
+	}
+	return { getMovieRelease, getCinema, movieRelease, getCinemas, isReleaseMovieDate };
 
-	return { getMovieRelease, getCinema, movieRelease, getCinemasByRegion };
+	function filterMovies(data, movieIdx, region, cinemaIdx) {
+		const result = [];
+
+		for (const [key, arr] of Object.entries(data)) {
+			if (region && key !== region) continue; // region이 지정되어 있으면 필터
+
+			arr.forEach(item => {
+				if (item.MOVIE_IDX === movieIdx && item.CINEMA_IDX === cinemaIdx) {
+					result.push(item);
+				}
+			});
+		}
+
+		return result;
+	}
 });
