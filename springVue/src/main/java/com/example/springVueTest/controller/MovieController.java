@@ -28,4 +28,14 @@ public class MovieController {
 	public Map<String, Object> getCinema(@RequestBody Params params) {
 		return movieService.getCinema(params.getMap());
 	}
+	
+	@PostMapping("/get_movie_time")
+	public Map<String, Object> getMovieTime(@RequestBody Params params) {
+		return movieService.getMovieTime(params.getMap());
+	}
+	
+	@PostMapping("/get_seat")
+	public Map<String, Object> getSeat(@RequestBody Params params) {
+		return movieService.getSeat(params.getMap());
+	}
 }

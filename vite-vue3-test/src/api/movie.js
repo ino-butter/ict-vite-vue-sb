@@ -7,4 +7,10 @@ export const movieAPI = {
 	getCinema(data) {
 		return api.post('/movie/get_cinema', data);
 	},
+	getMovieTime(data) {
+		return api.post('/movie/get_movie_time', data);
+	},
+	getSeat(data) {
+		return api.post('/movie/get_seat', data);
+	},
 };

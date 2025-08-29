@@ -27,4 +27,18 @@ public class MovieService {
     	responseParams.setCode(201).setIsSuccess(true).setData(movieMapper.getCinema(map));
         return responseParams.getMap();
     }
+    
+    public Map<String, Object> getMovieTime(Map<String, Object> map) {
+    	ResponseParams responseParams = new ResponseParams();
+    	System.out.println(movieMapper.getMovieTime(map));
+    	responseParams.setCode(201).setIsSuccess(true).setData(movieMapper.getMovieTime(map));
+        return responseParams.getMap();
+    }
+    
+    public Map<String, Object> getSeat(Map<String, Object> map) {
+    	ResponseParams responseParams = new ResponseParams();
+    	System.out.println(movieMapper.getSeat(map));
+    	responseParams.setCode(201).setIsSuccess(true).setData(movieMapper.getSeat(map));
+        return responseParams.getMap();
+    }
 }
