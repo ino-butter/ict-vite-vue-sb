@@ -13,4 +13,7 @@ export const movieAPI = {
 	getSeat(data) {
 		return api.post('/movie/get_seat', data);
 	},
+	reservationMovie(data) {
+		return api.post('/movie/reservation_movie', data);
+	},
 };

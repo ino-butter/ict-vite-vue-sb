@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -20,6 +21,9 @@ public class AuthService {
 
 	@Autowired
 	private AuthMapper authMapper;
+	
+	@Autowired
+	private RedisService redisService;
 
 	public Map<String, Object> login(Map<String, Object> map) {
 		var searchUser = authMapper.searchUser(map);
@@ -29,18 +33,25 @@ public class AuthService {
 
 		if (searchUser != null) {
 			Map<String, Object> urtMap = new HashMap<String, Object>();
-			String idx = searchUser.get("IDX").toString();
-			String accessToken = jwtUtil.generateAccessToken(idx);
-			String refreshToken = jwtUtil.generateRefreshToken(idx);
+			String userIDX = searchUser.get("IDX").toString();
+			String accessToken = jwtUtil.generateAccessToken(userIDX);
+			String refreshToken = jwtUtil.generateRefreshToken(userIDX);
 			System.out.println("로그인 성공");
 			System.out.println("access token : " + accessToken);
 			System.out.println("refresh token : " + refreshToken);
 
-			urtMap.put("IDX", idx);
+			urtMap.put("IDX", userIDX);
 			urtMap.put("REFRESH_TOKEN", refreshToken);
 			urtMap.put("ACCESS_TOKEN", accessToken);
-			authMapper.updateRefreshToken(urtMap);
+			
+			// RefreshToken DB 저장
+			//authMapper.updateRefreshToken(urtMap);
+			
+			// RefreshToken Redis 저장
+			redisService.saveRefreshToken(userIDX, refreshToken);
+
 			responseParams.setCode(200).setIsSuccess(true).setData(urtMap);
+			
 		} else {
 			System.out.println("로그인 실패");
 			responseParams.setCode(401).setIsSuccess(false);
@@ -50,10 +61,10 @@ public class AuthService {
 	public Map<String, Object> autoLogin(Map<String, Object> map) {
 		ResponseParams responseParams = new ResponseParams();
 		String refreshToken = map.get("REFRESH_TOKEN").toString();
-		String idx = jwtUtil.extractUsername(refreshToken);
-		if (jwtUtil.validateToken(refreshToken, idx)){
+		String userIDX = jwtUtil.extractUsername(refreshToken);
+		if (jwtUtil.validateToken(refreshToken, userIDX)){
 			Map<String, Object> retmap = new HashMap<String, Object>();		
-			String newAccessToken = jwtUtil.generateAccessToken(idx);
+			String newAccessToken = jwtUtil.generateAccessToken(userIDX);
 			retmap.put("ACCESS_TOKEN", newAccessToken);
 			responseParams.setCode(200).setIsSuccess(true).setData(retmap);
 			System.out.println("Refresh토큰 정상");
@@ -69,27 +80,33 @@ public class AuthService {
 		System.out.println("AccessToken 재갱신 시작");
 		ResponseParams responseParams = new ResponseParams();
 		String clientRefreshToken = map.get("REFRESH_TOKEN").toString();
-		Map<String, Object> getUserByRefreshToken = authMapper.getUserByRefreshToken(map);
-		if (getUserByRefreshToken != null) {
-			
-			String idx = getUserByRefreshToken.get("IDX").toString();
-			if (!jwtUtil.validateToken(clientRefreshToken, idx)) {
+		String refreshToken = map.get("REFRESH_TOKEN").toString();
+		String userIDX = jwtUtil.extractUsername(refreshToken);
+		if (jwtUtil.validateToken(refreshToken, userIDX)){
+			String redisRefreshToken = redisService.getRefreshToken(userIDX);
+			if(redisRefreshToken == null) {
 				responseParams.setCode(403).setIsSuccess(false).setMessage("RefreshToken 만료 또는 유효하지 않음");
 				System.out.println("갱신 실패 - RefreshToken 만료");
 				return responseParams.getMap();
 			}
-			
-			
-			Map<String, Object> urtMap = new HashMap<String, Object>();
-			String newAccessToken = jwtUtil.generateAccessToken(idx);
+			else if (!redisRefreshToken.equals(refreshToken)) {
+				responseParams.setCode(403).setIsSuccess(false).setMessage("RefreshToken가 일치하지 않음");
+				System.out.println("갱신 실패 - RefreshToken 불일치");
+				return responseParams.getMap();
+			}else
+			{
+				Map<String, Object> urtMap = new HashMap<String, Object>();
+				String newAccessToken = jwtUtil.generateAccessToken(userIDX);
 
-			urtMap.put("IDX", idx);
-			urtMap.put("ACCESS_TOKEN", newAccessToken);
-			responseParams.setCode(200).setIsSuccess(true).setData(urtMap);
-			System.out.println("갱신 성공");
-		} else {
-			responseParams.setCode(400).setIsSuccess(false).setMessage("RefreshToken이 없거나 불일치");
-			System.out.println("갱신 실패");
+				urtMap.put("IDX", userIDX);
+				urtMap.put("ACCESS_TOKEN", newAccessToken);
+				responseParams.setCode(200).setIsSuccess(true).setData(urtMap);
+				System.out.println("갱신 성공");
+			}
+		}
+		else {
+			responseParams.setCode(403).setIsSuccess(false).setMessage("RefreshToken 만료 또는 유효하지 않음");
+			System.out.println("갱신 실패 - RefreshToken 만료");
 		}
 		return responseParams.getMap();
 	}

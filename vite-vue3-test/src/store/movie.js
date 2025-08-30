@@ -13,22 +13,25 @@ export const useMovieStore = defineStore('movie', () => {
 	const selectedRegion = ref('');
 	const selectedCinemaIDX = ref('');
 	const selectedDate = ref('');
+	const selectedSeats = ref([]);
+	const selectedSchedule = ref();
 
-	
 	async function getSeat(scheduleIDX) {
 		const data = {
 			SCHEDULE_IDX: scheduleIDX,
 		};
+		selectedSchedule.value = scheduleIDX;
 		const response = await movieAPI.getSeat(data);
 		const flatSeats = response.data.result; // 최상위 배열 안의 배열
 		const rows = [];
 
 		flatSeats.forEach(seat => {
-		const rowIndex = seat.SEAT_ROW - 1;
-		if (!rows[rowIndex]) rows[rowIndex] = [];
-		rows[rowIndex].push(seat);
+			const rowIndex = seat.SEAT_ROW;
+			if (!rows[rowIndex]) rows[rowIndex] = [];
+			rows[rowIndex].push(seat);
 		});
 		seats.value = rows;
+		console.log(rows);
 	}
 	async function getMovieRelease() {
 		const response = await movieAPI.getMovieRelease();
@@ -117,7 +120,7 @@ export const useMovieStore = defineStore('movie', () => {
 		const data = {
 			MOVIE_IDX: selectedMovieIDX.value,
 			CINEMA_IDX: selectedCinemaIDX.value,
-			DATE: selectedDate.value
+			DATE: selectedDate.value,
 		};
 		const response = await movieAPI.getMovieTime(data);
 
@@ -143,6 +146,33 @@ export const useMovieStore = defineStore('movie', () => {
 		movieTimes.value = Object.values(grouped);
 		console.log(movieTimes.value);
 	}
+	function selectSeat(seat) {
+		if (seat.LOCKED === true) return;
+		if (seat.RESERVATION_STATUS === 'Reservation') return;
+		if (seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE === 'select') {
+			seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE = 'seat';
+
+			const index = selectedSeats.value.findIndex(s => s.SEAT_IDX === seat.SEAT_IDX);
+			if (index !== -1) selectedSeats.value.splice(index, 1);
+		} else if (seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE === 'seat') {
+			seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE = 'select';
+			selectedSeats.value.push({
+				SEAT_IDX: seat.SEAT_IDX,
+			});
+		}
+		console.log('현재 선택된 좌석 IDX:', selectedSeats.value);
+	}
+	async function reservationMovie() {
+		if (selectedSeats.value.length === 0) {
+		} else {
+			const data = {
+				SCHEDULE_IDX: selectedSchedule.value,
+				ACCESS_TOKEN: localStorage.getItem('ACCESS_TOKEN'),
+				SELECT_SEAT: selectedSeats.value,
+			};
+			const response = await movieAPI.reservationMovie(data);
+		}
+	}
 	return {
 		regions,
 		getMovieRelease,
@@ -150,6 +180,7 @@ export const useMovieStore = defineStore('movie', () => {
 		getSeat,
 		seats,
 		movieRelease,
+		reservationMovie,
 		movieTimes,
 		getCinemas,
 		isReleaseMovieDate,
@@ -158,6 +189,7 @@ export const useMovieStore = defineStore('movie', () => {
 		selectCinema,
 		selectDate,
 		selectedRegion,
+		selectSeat,
 	};
 
 	function filterMovies(data, movieIdx, region, cinemaIdx) {
