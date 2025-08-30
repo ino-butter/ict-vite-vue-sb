@@ -116,3 +116,14 @@ npm run dev
 ### 4. Redis (Docker)
 - Host : locahost
 - Port : 6379
+  
+```bash
+# 로컬 서버 실행
+docker pull redis # 도커 이미지 가져오기
+docker run --name my-redis -p 6379:6379 -d redis # 컨테이너 실행
+docker ps # Redis 실행 확인
+docker exec -it my-redis redis-cli # PING 테스트
+docker stop my-redis # 중지
+docker start my-redis # 재시작
+docker rm my-redis # 삭제
+```
