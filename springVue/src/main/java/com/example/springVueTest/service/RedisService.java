@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +39,6 @@ public class RedisService {
     public void lockSeat(String userIDX, String scheduleIDX, String seatIDX) {
     	String key = "LOCK_SEAT:" + scheduleIDX + ":" + seatIDX;
         redisTemplate.opsForValue().set(key, userIDX, RESERVATION_MOVIE_EEXPIRE, TimeUnit.MINUTES);
-        System.out.println("lock key : " + key);
     }
     public boolean isSeatLocked(String scheduleIDX, String seatIDX) {
     	String key = "LOCK_SEAT:" + scheduleIDX + ":" + seatIDX;
@@ -48,16 +50,34 @@ public class RedisService {
         redisTemplate.delete(key);
         System.out.println("unlock key : " + key);
     }
+
     
-    public void unlockSeatByUser(String scheduleIDX, String userIDX) {
-        Set<String> keys = redisTemplate.keys("LOCK_SEAT:" + scheduleIDX + ":*");
-        if (keys != null) {
-            for (String key : keys) {
-                String locker = redisTemplate.opsForValue().get(key);
-                if (userIDX.equals(locker)) {
-                    redisTemplate.delete(key);
-                }
-            }
+    
+    public void userSeat(String userIDX, String scheduleIDX, String seatIDX) {
+    	String key = "USER_SEAT:" + scheduleIDX + ":" + userIDX;
+    	String existing = redisTemplate.opsForValue().get(key);
+        if (existing == null || existing.isEmpty()) {
+            redisTemplate.opsForValue().set(key, seatIDX, RESERVATION_MOVIE_EEXPIRE, TimeUnit.MINUTES);
+        } else {
+            redisTemplate.opsForValue().set(key, existing + "," + seatIDX, RESERVATION_MOVIE_EEXPIRE, TimeUnit.MINUTES);
         }
     }
+    public List<String> getUserSeats(String userIDX, String scheduleIDX) {
+        String key = "USER_SEAT:" + scheduleIDX + ":" + userIDX;
+        String seats = redisTemplate.opsForValue().get(key);
+        if (seats == null || seats.isEmpty()) return Collections.emptyList();
+        return Arrays.asList(seats.split(","));
+    }
+
+    // 결제 시 LOCK 해제 + USER_SEAT 삭제
+    public void releaseUserSeats(String userIDX, String scheduleIDX) {
+        List<String> seatList = getUserSeats(userIDX, scheduleIDX);
+        for (String seatIDX : seatList) {
+            unlockSeat(scheduleIDX, seatIDX);
+        }
+        String key = "USER_SEAT:" + scheduleIDX + ":" + userIDX;
+        redisTemplate.delete(key);
+        System.out.println("LOCK 해제 : " + key);
+    }
+    
 }

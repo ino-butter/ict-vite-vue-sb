@@ -9,4 +9,6 @@ public interface MovieMapper {
 	List<Map<String, Object>> getCinema(Map<String, Object> params);
 	List<Map<String, Object>> getMovieTime(Map<String,Object> params);
 	List<Map<String, Object>> getSeat(Map<String,Object> params);
+	void reservationMovie(Map<String,Object> params);
+    List<String> checkReservedSeats(Map<String,Object> params);
 }

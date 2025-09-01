@@ -30,7 +30,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**").permitAll() // CORS auth 도메인은 인증 없이 사용
+                    .requestMatchers("/auth/**", "/movie_poster/**").permitAll() // CORS 해당 PATH은 인증 없이 사용
                     .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

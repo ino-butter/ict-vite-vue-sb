@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<Loading v-model="loading" />
 		<div class="max-w-6xl mx-auto my-5 bg-white rounded-lg shadow-md overflow-hidden">
 			<div class="flex h-[600px]">
 				<div class="w-80 border-r border-gray-300 flex flex-col">
@@ -9,7 +10,7 @@
 							<li v-for="(movie, idx) in movieRelease" :key="idx" class="flex items-center gap-2">
 								<div
 									class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
-									@click="selectMovie(movie.IDX)"
+									@click="selectMovie(movie)"
 								>
 									<span
 										class="text-white text-xs px-1 rounded"
@@ -53,7 +54,7 @@
 								v-for="(cinema, idx) in getCinemas(selectedRegion).cinemas"
 								:key="idx"
 								class="flex items-center gap-2 w-full px-2 py-1 rounded cursor-pointer hover:bg-zinc-400 transition-colors duration-200"
-								@click="selectCinema(cinema.CINEMA_IDX)"
+								@click="selectCinema(cinema)"
 							>
 								{{ cinema.CINEMA_NAME }}
 							</li>
@@ -102,7 +103,7 @@
 										v-for="(time, idx) in movieTime.SCHEDULES"
 										:key="idx"
 										class="px-3 py-1 bg-gray-200 rounded-md cursor-pointer hover:bg-blue-300 transition"
-										@click="selectSchedule(time.SCHEDULE_IDX)"
+										@click="selectSchedule(time, movieTime.THEATER_IDX)"
 									>
 										{{ formatTime(time.START_TIME) }}
 									</div>
@@ -140,7 +141,7 @@
 									? 'bg-black text-white border-black'
 									: seat.SEAT_TYPE === 'select' ||
 										  seat.LOCKED === true ||
-										  seat.RESERVATION_STATUS === 'Reservation'
+										  seat.RESERVATION_STATUS === 'reservation'
 										? 'bg-gray-400 text-white border-gray-400'
 										: seat.SEAT_TYPE === 'seat'
 											? 'bg-green-300 border-green-400'
@@ -185,12 +186,20 @@
 </template>
 <script setup>
 import { useMovieStore } from '@/store/movie';
+const movieStore = useMovieStore();
+
 import { useDateStore } from '@/store/date';
-import { storeToRefs } from 'pinia';
 import { ref, nextTick } from 'vue';
 
-const movieStore = useMovieStore();
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+import Loading from '@/views/Loading.vue';
+const loading = ref(false);
+
 const dateStore = useDateStore();
+
+import { storeToRefs } from 'pinia';
 const { movieRelease, selectedRegion, regions, movieTimes, seats } = storeToRefs(movieStore);
 
 const getCinemas = movieStore.getCinemas;
@@ -204,12 +213,14 @@ const selectRegion = movieStore.selectRegion;
 const selectCinema = movieStore.selectCinema;
 const selectDate = movieStore.selectDate;
 const selectSeat = movieStore.selectSeat;
-const reservationMovie = movieStore.reservationMovie;
 
 const getFilterMovie = movieStore.getFilterMove;
 
 const seatArea = ref(null);
 const onSeatArea = ref(false);
+
+const tempSchedule = ref();
+const tempTheater = ref();
 
 function formatTime(startTime) {
 	if (!startTime) return '';
@@ -218,14 +229,29 @@ function formatTime(startTime) {
 	const minutes = String(date.getMinutes()).padStart(2, '0');
 	return `${hours}:${minutes}`;
 }
-async function selectSchedule(scheduleIDX) {
+async function selectSchedule(schedule, theater) {
+	loading.value = true;
+	tempSchedule.value = schedule;
+	tempTheater.value = theater;
+
 	onSeatArea.value = true;
-	await getSeat(scheduleIDX);
+	await getSeat(schedule, theater);
 	nextTick(() => {
 		if (seatArea.value) {
 			seatArea.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			loading.value = false;
 		}
 	});
+}
+async function reservationMovie() {
+	const result = await movieStore.reservationMovie();
+	if (result == null) return;
+	if (result.isSuccess === true) {
+		router.push('/bookticket/reservation');
+	} else {
+		alert(result.message);
+		selectSchedule(tempSchedule.value, tempTheater.value);
+	}
 }
 </script>
 <style></style>

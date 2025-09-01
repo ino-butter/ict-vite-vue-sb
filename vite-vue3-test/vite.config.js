@@ -16,5 +16,12 @@ export default defineConfig({
 		// 빌드 결과물이 생성되는 경로
 		outDir: '../spring/src/main/resources/resources/static',
 	},
-	server: {},
+	server: {
+		proxy: {
+			'/movie_poster': {
+				target: 'http://localhost:8085',
+				changeOrigin: true,
+			},
+		},
+	},
 });

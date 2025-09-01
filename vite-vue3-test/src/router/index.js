@@ -21,7 +21,12 @@ const routes = [
 	{
 		path: '/bookticket',
 		component: () => import('@/views/BookTicketPage.vue'),
-				meta: { auth: true },
+		meta: { auth: true },
+	},
+	{
+		path: '/bookticket/reservation',
+		component: () => import('@/views/ReservationPage.vue'),
+		meta: { auth: true },
 	},
 ];
 

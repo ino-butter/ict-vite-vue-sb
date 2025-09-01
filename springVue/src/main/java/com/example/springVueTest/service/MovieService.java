@@ -3,6 +3,7 @@ package com.example.springVueTest.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class MovieService {
     public Map<String, Object> getSeat(Map<String, Object> map) {
     	ResponseParams responseParams = new ResponseParams();
 
-        List<Map<String, Object>> seats = movieMapper.getSeat(map); // seat 리스트
+        List<Map<String, Object>> seats = movieMapper.getSeat(map);
         String scheduleIDX = map.get("SCHEDULE_IDX").toString();
         
         for (Map<String, Object> seat : seats) {
@@ -53,9 +54,7 @@ public class MovieService {
         	{
                 String seatIDX = seat.get("SEAT_IDX").toString();
                 boolean locked = redisService.isSeatLocked(scheduleIDX, seatIDX);
-                seat.put("LOCKED", locked); // LOCKED 필드 추가
-                if(locked)
-                	System.out.println("LOCK");
+                seat.put("LOCKED", locked);
         	}
         }
         System.out.println(seats);
@@ -70,13 +69,67 @@ public class MovieService {
     	System.out.println(map);
 		String accessToken = map.get("ACCESS_TOKEN").toString();
 		String userIDX = jwtUtil.extractUsername(accessToken);
-		String scheduleIDX = map.get("SCHEDULE_IDX").toString(); 
+		String scheduleIDX = map.get("SCHEDULE_IDX").toString(); 		
 		
     	for (Map<String, Object> seat : seats) {
             String seatIDX = seat.get("SEAT_IDX").toString();
             System.out.println("선택된 좌석 IDX = " + seatIDX);
-            redisService.lockSeat(userIDX, scheduleIDX, seatIDX);
+            if(redisService.isSeatLocked(scheduleIDX, seatIDX)){
+            	return responseParams.setCode(401).setIsSuccess(false).setMessage("다른사람이 선택한 좌석이 있습니다.").getMap();
+            }
+            else{
+            	
+            }
+            
         }
+    	 List<String> seatIDs = seats.stream()
+    		        .map(seat -> seat.get("SEAT_IDX").toString())
+    		        .collect(Collectors.toList());
+    	 
+    	 Map<String, Object> param = new HashMap<>();
+    	    param.put("SCHEDULE_IDX", scheduleIDX);
+    	    param.put("SEATS", seatIDs);
+
+    	    System.out.println(param);
+    	 List<String> alreadyReservedSeats = movieMapper.checkReservedSeats(param);
+    	    if (!alreadyReservedSeats.isEmpty()) {
+    	        return responseParams
+    	            .setCode(401)
+    	            .setIsSuccess(false)
+    	            .setMessage("이미 예약된 좌석이 있습니다: " + alreadyReservedSeats)
+    	            .getMap();
+    	    }
+    	    System.out.println(alreadyReservedSeats);
+
+    		    System.out.println(seats);
+       	for (Map<String, Object> seat : seats) {
+            String seatIDX = seat.get("SEAT_IDX").toString();
+            redisService.lockSeat(userIDX, scheduleIDX, seatIDX);
+            redisService.userSeat(userIDX, scheduleIDX, seatIDX);
+       	}
+    	responseParams.setCode(201).setIsSuccess(true);
+        return responseParams.getMap();
+    }
+    
+    public Map<String, Object> confirmReservationMovie(Map<String, Object> map) {
+    	ResponseParams responseParams = new ResponseParams();
+    	
+		String accessToken = map.get("ACCESS_TOKEN").toString();
+		String userIDX = jwtUtil.extractUsername(accessToken);
+		String scheduleIDX = map.get("SCHEDULE_IDX").toString(); 
+		
+		 List<String> seatList = redisService.getUserSeats(userIDX, scheduleIDX);
+		 for (String seatIDX : seatList) {
+			Map<String, Object> insertMap = new HashMap<String, Object>();
+			insertMap.put("SCHEDULE_IDX", scheduleIDX);
+			insertMap.put("SEAT_IDX", seatIDX);
+			insertMap.put("USER_IDX", userIDX);
+			insertMap.put("RESERVATION_STATUS", "reservation");
+			movieMapper.reservationMovie(insertMap);
+			System.out.println("예약 됨 : " + seatIDX);
+		 }
+		 redisService.releaseUserSeats(userIDX, scheduleIDX);
+		
     	responseParams.setCode(201).setIsSuccess(true);
         return responseParams.getMap();
     }

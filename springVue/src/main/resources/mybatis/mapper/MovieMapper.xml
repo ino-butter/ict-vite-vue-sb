@@ -26,4 +26,22 @@
 		LEFT JOIN MOVIE_RESERVATION MR ON MS.SEAT_IDX = MR.SEAT_IDX
    		AND MR.SCHEDULE_IDX = #{SCHEDULE_IDX};
 	</select>
+	
+	<insert id="reservationMovie" parameterType="hashMap">
+	    INSERT INTO MOVIE_RESERVATION
+	    (SCHEDULE_IDX, SEAT_IDX, USER_IDX, RESERVATION_STATUS, INSERT_TS)
+	    VALUES
+	    (#{SCHEDULE_IDX}, #{SEAT_IDX}, #{USER_IDX}, #{RESERVATION_STATUS}, CURRENT_TIMESTAMP);
+	</insert>
+	
+	<select id="checkReservedSeats" parameterType="map" resultType="String">
+	    SELECT SEAT_IDX
+	    FROM MOVIE_RESERVATION
+	    WHERE SCHEDULE_IDX = #{SCHEDULE_IDX}
+	      AND SEAT_IDX IN
+	      <foreach collection="SEATS" item="SEAT" open="(" separator="," close=")">
+	        #{SEAT}
+	      </foreach>
+	      AND RESERVATION_STATUS = 'reservation'
+	</select>
 </mapper>

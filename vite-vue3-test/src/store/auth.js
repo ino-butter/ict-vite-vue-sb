@@ -6,6 +6,8 @@ export const useAuthStore = defineStore('auth', () => {
 	const accessToken = ref(localStorage.getItem('ACCESS_TOKEN') || null);
 	const refreshToken = ref(localStorage.getItem('REFRESH_TOKEN') || null);
 
+	const isLoging = ref(false);
+
 	async function login(email, pw) {
 		try {
 			const data = {
@@ -22,8 +24,10 @@ export const useAuthStore = defineStore('auth', () => {
 				console.log('AccessToken을 localStorege에 저장', accessToken.value);
 				console.log('RefreshToken localStorege에 저장', refreshToken.value);
 				console.log('로그인 성공');
+				isLoging.value = true;
 				return true;
 			} else {
+				isLoging.value = false;
 				console.log('로그인 실패');
 			}
 		} catch (error) {
@@ -45,6 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
 				console.log('AccessToken 갱신 성공', accessToken.value);
 				return true;
 			} else {
+				isLoging.value = false;
 				console.log('AccessToken 갱신 실패', message);
 				//localStorage.removeItem('ACCESS_TOKEN');
 				//localStorage.removeItem('REFRESH_TOKEN');
@@ -66,8 +71,10 @@ export const useAuthStore = defineStore('auth', () => {
 				accessToken.value = result.ACCESS_TOKEN;
 				localStorage.setItem('ACCESS_TOKEN', result.ACCESS_TOKEN);
 				console.log('자동 로그인 성공', accessToken.value);
+				isLoging.value = true;
 				return true;
 			} else {
+				isLoging.value = false;
 				console.log('자동 로그인 실패', message);
 				//localStorage.removeItem('ACCESS_TOKEN');
 				//localStorage.removeItem('REFRESH_TOKEN');

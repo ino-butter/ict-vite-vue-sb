@@ -16,4 +16,7 @@ export const movieAPI = {
 	reservationMovie(data) {
 		return api.post('/movie/reservation_movie', data);
 	},
+	confirmReservationMovie(data) {
+		return api.post('/movie/confirm_reservation_movie', data);
+	},
 };

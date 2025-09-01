@@ -51,7 +51,6 @@ import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
 const router = useRouter();
-const { accessToken } = storeToRefs(authStore);
 
 async function tryLogin() {
 	try {

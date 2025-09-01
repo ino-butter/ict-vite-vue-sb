@@ -9,18 +9,19 @@ export const useMovieStore = defineStore('movie', () => {
 	const movieTimes = ref();
 	const seats = ref();
 
-	const selectedMovieIDX = ref('');
+	const selectedMovie = ref('');
 	const selectedRegion = ref('');
-	const selectedCinemaIDX = ref('');
+	const selectedCinema = ref('');
 	const selectedDate = ref('');
 	const selectedSeats = ref([]);
 	const selectedSchedule = ref();
 
-	async function getSeat(scheduleIDX) {
+	async function getSeat(schedule, theater) {
 		const data = {
-			SCHEDULE_IDX: scheduleIDX,
+			SCHEDULE_IDX: schedule.SCHEDULE_IDX,
 		};
-		selectedSchedule.value = scheduleIDX;
+		selectedSchedule.value = schedule;
+		selectedSchedule.value.THEATER_NAME = theater;
 		const response = await movieAPI.getSeat(data);
 		const flatSeats = response.data.result; // 최상위 배열 안의 배열
 		const rows = [];
@@ -31,6 +32,7 @@ export const useMovieStore = defineStore('movie', () => {
 			rows[rowIndex].push(seat);
 		});
 		seats.value = rows;
+		selectedSeats.value = [];
 		console.log(rows);
 	}
 	async function getMovieRelease() {
@@ -39,10 +41,10 @@ export const useMovieStore = defineStore('movie', () => {
 		console.log(movieRelease.value);
 	}
 	async function getCinema() {
-		if (!selectedMovieIDX.value) return;
+		if (!selectedMovie.value) return;
 
 		const data = {
-			MOVIE_IDX: selectedMovieIDX.value,
+			MOVIE_IDX: selectedMovie.value.IDX,
 		};
 		const response = await movieAPI.getCinema(data);
 		const _cinemas = response.data.result;
@@ -90,9 +92,9 @@ export const useMovieStore = defineStore('movie', () => {
 	function isReleaseMovieDate(day) {
 		const schedule = filterMovies(
 			cinemas.value,
-			selectedMovieIDX.value,
+			selectedMovie.value.MOVIE_IDX,
 			selectedRegion.value,
-			selectedCinemaIDX.value,
+			selectedCinema.value.CINEMA_IDX,
 		);
 		if (!schedule || schedule.length === 0) return false;
 		const selectDate = `${day.year}-${day.month}-${day.day}`;
@@ -102,24 +104,24 @@ export const useMovieStore = defineStore('movie', () => {
 		});
 	}
 
-	function selectMovie(idx) {
-		selectedMovieIDX.value = idx;
+	function selectMovie(movie) {
+		selectedMovie.value = movie;
 		getCinema();
-		console.log('selectMovie : ' + idx);
+		console.log('selectMovie');
 	}
 	function selectRegion(region) {
 		selectedRegion.value = region;
 		console.log('selectRegion : ' + region);
 	}
-	function selectCinema(idx) {
-		selectedCinemaIDX.value = idx;
-		console.log('selectCinema : ' + idx);
+	function selectCinema(cinema) {
+		selectedCinema.value = cinema;
+		console.log('selectCinema');
 	}
 	async function selectDate(date) {
 		selectedDate.value = date;
 		const data = {
-			MOVIE_IDX: selectedMovieIDX.value,
-			CINEMA_IDX: selectedCinemaIDX.value,
+			MOVIE_IDX: selectedMovie.value.MOVIE_IDX,
+			CINEMA_IDX: selectedCinema.value.CINEMA_IDX,
 			DATE: selectedDate.value,
 		};
 		const response = await movieAPI.getMovieTime(data);
@@ -148,7 +150,7 @@ export const useMovieStore = defineStore('movie', () => {
 	}
 	function selectSeat(seat) {
 		if (seat.LOCKED === true) return;
-		if (seat.RESERVATION_STATUS === 'Reservation') return;
+		if (seat.RESERVATION_STATUS === 'reservation') return;
 		if (seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE === 'select') {
 			seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE = 'seat';
 
@@ -158,6 +160,7 @@ export const useMovieStore = defineStore('movie', () => {
 			seats.value[seat.SEAT_ROW][seat.SEAT_COL].SEAT_TYPE = 'select';
 			selectedSeats.value.push({
 				SEAT_IDX: seat.SEAT_IDX,
+				SEAT_ALIAS: seat.SEAT_ALIAS,
 			});
 		}
 		console.log('현재 선택된 좌석 IDX:', selectedSeats.value);
@@ -166,11 +169,13 @@ export const useMovieStore = defineStore('movie', () => {
 		if (selectedSeats.value.length === 0) {
 		} else {
 			const data = {
-				SCHEDULE_IDX: selectedSchedule.value,
+				SCHEDULE_IDX: selectedSchedule.value.SCHEDULE_IDX,
 				ACCESS_TOKEN: localStorage.getItem('ACCESS_TOKEN'),
 				SELECT_SEAT: selectedSeats.value,
 			};
 			const response = await movieAPI.reservationMovie(data);
+			console.log(selectedMovie.value);
+			return response.data;
 		}
 	}
 	return {
@@ -190,6 +195,11 @@ export const useMovieStore = defineStore('movie', () => {
 		selectDate,
 		selectedRegion,
 		selectSeat,
+
+		selectedMovie,
+		selectedCinema,
+		selectedSchedule,
+		selectedSeats,
 	};
 
 	function filterMovies(data, movieIdx, region, cinemaIdx) {
